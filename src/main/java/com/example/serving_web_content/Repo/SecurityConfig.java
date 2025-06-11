@@ -29,7 +29,7 @@
                     .csrf(csrf -> csrf.disable())
                     .authorizeHttpRequests(auth -> auth
 
-                            .requestMatchers(HttpMethod.POST, "/register", "/guest", "/login").permitAll()
+                            .requestMatchers(HttpMethod.POST, "/register", "/guest", "/login", "/admin").permitAll()
                             .requestMatchers(HttpMethod.GET, "/register").permitAll()
                             .requestMatchers("/register", "/login", "/guest", "/", "/css/**", "/about", "/support", "/blog").permitAll()
                             .requestMatchers("/blog/add").hasRole("USER")

@@ -1,18 +1,60 @@
-<div th:fragment="header" xmlns:sec="http://www.w3.org/1999/xhtml">
-    <div class="d-flex flex-column flex-md-row align-items-center pb-3 mb-4 border-bottom">
-        <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
-            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="32" class="me-2" viewBox="0 0 118 94" role="img"><title>Bootstrap</title><path fill-rule="evenodd" clip-rule="evenodd" d="..."></path></svg>
-            <span class="fs-4">Forum</span>
-        </a>
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<!-- ЭТО ТОЛЬКО ФРАГМЕНТ. У НЕГО НЕТ СВОИХ <head> И <body> -->
 
-        <nav class="d-inline-flex mt-2 mt-md-0 ms-md-auto">
-            <a class="me-2 py-2 text-dark text-decoration-none" href="/">main</a>
-            <a class="me-2 py-2 text-dark text-decoration-none" href="/about">about</a>
-            <a class="me-2 py-2 text-dark text-decoration-none" href="/Support">Support</a>
-            <a class="py-2 text-dark text-decoration-none me-2" href="/blog">Blog</a>
-            <a class="py-2 text-dark text-decoration-none me-2" href="/blog/add" sec:authorize="hasRole('USER')">Add Blog</a>
-            <a class="py-2 text-dark text-decoration-none me-2" href="/profile" sec:authorize="hasRole('USER')">Profile</a>
-            <a class="py-2 text-dark text-decoration-none" sec:authorize="hasRole('GUEST')" href="/login">Login</a>
-        </nav>
-    </div>
+<div th:fragment="header">
+    <!-- Используем стандартный компонент Navbar Bootstrap -->
+    <nav class="navbar navbar-expand-md navbar-light bg-light border-bottom">
+        <div class="container-fluid">
+            <!-- Название сайта/бренд -->
+            <a class="navbar-brand" th:href="@{/}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2"><path d="M2.5 17A2.5 2.5 0 0 1 5 14.5V4a2.5 2.5 0 0 1 5 0v10.5a2.5 2.5 0 0 1 5 0V4a2.5 2.5 0 0 1 5 0v10.5a2.5 2.5 0 0 1-2.5 2.5H5a2.5 2.5 0 0 1-2.5-2.5z"></path></svg>
+                <span class="fs-5">Ваш Блог & Форум</span>
+            </a>
+
+            <!-- Кнопка для сворачивания навигации на маленьких экранах -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Навигационные ссылки -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto"> <!-- ms-auto выравнивает ссылки справа -->
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/blog}">Блог</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/about}">О проекте</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/Support}">Поддержка</a>
+                    </li>
+
+                    <li class="nav-item" sec:authorize="hasRole('USER')")>
+                        <a class="nav-link" th:href="@{/blog/add}">Создать пост</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="!hasRole('GUEST')">
+                        <a class="nav-link" th:href="@{/profile}">Профиль</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="hasRole('GUEST')">
+                        <a class="nav-link" th:href="@{/login}">Войти</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="hasRole('GUEST')">
+                        <a class="nav-link" th:href="@{/register}">Регистрация</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="hasRole('GUEST')">
+                        <form th:action="@{/logout}" method="post" style="display: inline;">
+                            <button type="submit" class="nav-link btn btn-link" style="padding-top: 8px; padding-bottom: 8px;">Выйти</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 </div>
+
+
+</html>

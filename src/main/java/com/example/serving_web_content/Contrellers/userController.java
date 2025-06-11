@@ -50,7 +50,7 @@ public class userController {
                 new UsernamePasswordAuthenticationToken(user.getUsername(), rawPassword)
         );
         SecurityContextHolder.getContext().setAuthentication(auth);
-        return "redirect:/";
+        return "redirect:/login";
     }
     @PostMapping("/guest")
     public String loginAsGuest(HttpServletRequest request) {
@@ -73,5 +73,20 @@ public class userController {
     @GetMapping("/login")
     public String showLoginForm() {
         return "login";
+    }
+    @PostMapping("/admin")
+    public String loginAsAdmin(HttpServletRequest request) {
+        UserDetails guestUser = User
+                .withUsername("admin")
+                .password("")
+                .roles("ADMIN")
+                .build();
+
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+                guestUser, null, guestUser.getAuthorities()
+        );
+        SecurityContextHolder.getContext().setAuthentication(auth);
+        request.getSession().setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+        return "redirect:/";
     }
 }

@@ -9,16 +9,33 @@
 <header th:insert="~{blocks/header :: header}"></header>
 
 <div class="container mt-5 mb-5">
-    <h1>Редактировать пост</h1>
+    <div class="card shadow-lg p-4">
+        <h2 class="mb-4 text-center">✏️ Редактировать пост</h2>
 
-    <form th:action="@{/blog/{id}/edit(id=${post.id})}" method="post">
-        <input type="text" th:value="${post.title}" name="title" placeholder="Название статьи" class="form-control mb-2" />
-        <input type="text" th:value="${post.anons}" name="anons" placeholder="Анонс статьи" class="form-control mb-2" />
-        <textarea name="text" class="form-control mb-3" rows="6" placeholder="Текст статьи" th:text="${post.text}"></textarea>
-        <button type="submit" class="btn btn-success">Обновить</button>
-    </form>
+        <form th:action="@{/blog/{id}/edit(id=${post.id})}" method="post">
+            <div class="mb-3">
+                <label for="title" class="form-label">Название статьи</label>
+                <input type="text" id="title" name="title" th:value="${post.title}" class="form-control" placeholder="Введите название" required />
+            </div>
+
+            <div class="mb-3">
+                <label for="anons" class="form-label">Анонс статьи</label>
+                <input type="text" id="anons" name="anons" th:value="${post.anons}" class="form-control" placeholder="Введите краткое описание" required />
+            </div>
+
+            <div class="mb-4">
+                <label for="text" class="form-label">Текст статьи</label>
+                <textarea id="text" name="text" class="form-control" rows="8" placeholder="Введите основной текст статьи" required th:text="${post.text}"></textarea>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a th:href="@{/blog}" class="btn btn-secondary">← Назад</a>
+                <button type="submit" class="btn btn-success">💾 Сохранить изменения</button>
+            </div>
+        </form>
+    </div>
 </div>
 
-<footer th:insert="~{blocks/footer :: footer}"></footer>
+<footer th:insert="~{blocks/footer :: footer}" class="mt-5"></footer>
 </body>
 </html>

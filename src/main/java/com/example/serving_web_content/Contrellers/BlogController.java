@@ -48,7 +48,9 @@ public class BlogController {
         return "blog-Add";
     }
     @PostMapping("/blog/add")
-    public String blogPostAdd(@RequestParam String title,@RequestParam String anons,@AuthenticationPrincipal UserDetails userDetails,@RequestParam String text ,Model model) {
+    public String blogPostAdd(@RequestParam String title,@RequestParam String anons,
+                              @AuthenticationPrincipal UserDetails userDetails,
+                              @RequestParam String text ,Model model) {
         Post post = new Post(title,anons,text);
         Users user = usersRepository.findByUsername(userDetails.getUsername());
         post.setUser(user);
@@ -77,7 +79,8 @@ public class BlogController {
         return "blog-edit.html";
     }
     @PostMapping("/blog/{id}/edit")
-    public String blogPostUpdate(@PathVariable ("id") long id,@RequestParam String title,@RequestParam String anons,@RequestParam String text ,Model model) {
+    public String blogPostUpdate(@PathVariable ("id") long id,@RequestParam String title,
+                                 @RequestParam String anons,@RequestParam String text ,Model model) {
         Post post = postRepository.findById(id).orElseThrow();
         post.setTitle(title);
         post.setAnons(anons);
@@ -86,8 +89,16 @@ public class BlogController {
         return "redirect:/blog";
     }
     @PostMapping("/blog/{id}/remove")
-    public String blogPostDelete(@PathVariable ("id") long id,Model model) {
+    public String blogPostDelete(@PathVariable ("id") long id,Model model,
+                                 @AuthenticationPrincipal UserDetails userDetails) {
         Post post = postRepository.findById(id).orElseThrow();
+        boolean isAuthor = post.getUser().getUsername().equals(userDetails.getUsername());
+        boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(a ->
+                a.getAuthority().equals("ROLE_ADMIN"));
+        List<Comments> commentsToDelete = comRepository.findByPost(post);
+        if (commentsToDelete != null && !commentsToDelete.isEmpty()) {
+            comRepository.deleteAll(commentsToDelete);
+        }
         postRepository.delete(post);
         return "redirect:/blog";
     }
