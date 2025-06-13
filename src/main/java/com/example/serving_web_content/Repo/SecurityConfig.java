@@ -32,7 +32,6 @@
                             .requestMatchers(HttpMethod.POST, "/register", "/guest", "/login", "/admin").permitAll()
                             .requestMatchers(HttpMethod.GET, "/register").permitAll()
                             .requestMatchers("/register", "/login", "/guest", "/", "/css/**", "/about", "/support", "/blog").permitAll()
-                            .requestMatchers("/blog/add").hasRole("USER")
                             .anyRequest().authenticated()
                     )
                     .formLogin(form -> form

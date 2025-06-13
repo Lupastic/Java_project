@@ -1,4 +1,4 @@
-package com.example.serving_web_content.Contrellers;
+package com.example.serving_web_content.Controllers;
 
 import com.example.serving_web_content.Repo.ComRepository;
 import com.example.serving_web_content.Repo.PostRepository;

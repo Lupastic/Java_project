@@ -45,11 +45,6 @@
                     <li class="nav-item" sec:authorize="hasRole('GUEST')">
                         <a class="nav-link" th:href="@{/register}">Регистрация</a>
                     </li>
-                    <li class="nav-item" sec:authorize="hasRole('GUEST')">
-                        <form th:action="@{/logout}" method="post" style="display: inline;">
-                            <button type="submit" class="nav-link btn btn-link" style="padding-top: 8px; padding-bottom: 8px;">Выйти</button>
-                        </form>
-                    </li>
                 </ul>
             </div>
         </div>

@@ -21,6 +21,7 @@
                 <li sec:authorize="hasRole('ADMIN')">ADMIN</li>
             </ul>
             </p>
+            <a th:href="@{/change}" class="btn btn-secondary me-2">Change Details</a>
             <a th:href="@{/logout}" class="btn btn-danger">Logout</a>
         </div>
     </div>

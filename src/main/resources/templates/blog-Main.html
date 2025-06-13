@@ -20,15 +20,12 @@
 <div class="container mt-5">
     <h1 class="display-5 ">📝 Blog Page</h1>
     <div class="d-flex justify-content-between align-items-center mb-4" sec:authorize="hasRole('GUEST')">
-
         <a th:href="@{/blog/add}" class="btn btn-success btn-lg">+ Добавить пост</a>
     </div>
 
     <div th:if="${#lists.isEmpty(posts)}" class="alert alert-warning">
         Пока что нет ни одного поста. Будьте первым, кто добавит!
     </div>
-
-    <!-- Список постов -->
     <div class="row">
         <div th:each="el : ${posts}" class="col-md-6 col-lg-4 mb-4">
             <div class="card post-card h-100">

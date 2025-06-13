@@ -30,27 +30,22 @@
                 <h5>Ресурсы</h5>
                 <ul class="list-unstyled text-small">
                     <!-- Ссылка на создание поста (только авторизованные) -->
-                    <li class="mb-1" sec:authorize="isAuthenticated()">
+                    <li class="mb-1" sec:authorize="hasRole('USER')">
                         <a class="link-secondary text-decoration-none" th:href="@{/blog/add}">Создать пост</a>
                     </li>
                     <!-- Ссылка на профиль (только авторизованные) -->
                     <li class="mb-1" sec:authorize="isAuthenticated()">
                         <a class="link-secondary text-decoration-none" th:href="@{/profile}">Профиль</a>
                     </li>
-                    <!-- Ссылка на панель админа (только ADMIN) -->
-                    <li class="mb-1" sec:authorize="hasRole('ADMIN')">
-                        <a class="link-secondary text-decoration-none" th:href="@{/admin/dashboard}">Панель админа</a>
-                    </li>
                     <!-- Ссылка на страницу всех пользователей (пример) -->
                     <li class="mb-1" sec:authorize="hasRole('ADMIN')">
                         <a class="link-secondary text-decoration-none" th:href="@{/admin/users}">Пользователи (Admin)</a>
                     </li>
                     <!-- Ссылка на страницу поддержки -->
-                    <li class="mb-1"><a class="link-secondary text-decoration-none" th:href="@{/support}">Поддержка</a></li>
+                    <li class="mb-1"><a class="link-secondary text-decoration-none" th:href="@{/Support}">Поддержка</a></li>
                 </ul>
             </div>
 
-            <!-- Колонка "О нас и помощь" -->
             <div class="col-6 col-md">
                 <h5>Помощь и Информация</h5>
                 <ul class="list-unstyled text-small">
@@ -59,10 +54,7 @@
                     <!-- Предполагается, что у вас есть страницы для Privacy и Terms -->
                     <li class="mb-1"><a class="link-secondary text-decoration-none" th:href="@{/privacy}">Политика конфиденциальности</a></li>
                     <li class="mb-1"><a class="link-secondary text-decoration-none" th:href="@{/terms}">Условия использования</a></li>
-                    <!-- Предполагается, что у вас есть страница контактов -->
                     <li class="mb-1"><a class="link-secondary text-decoration-none" th:href="@{/contact}">Контакты</a></li>
-
-                    <!-- Ссылки для входа/регистрации/выхода (условные) -->
                     <li class="mb-1" sec:authorize="isAnonymous()">
                         <a class="link-secondary text-decoration-none" th:href="@{/login}">Войти</a>
                     </li>

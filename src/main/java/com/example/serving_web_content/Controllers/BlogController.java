@@ -1,4 +1,4 @@
-package com.example.serving_web_content.Contrellers;
+package com.example.serving_web_content.Controllers;
 
 import com.example.serving_web_content.Repo.UsersRepository;
 import com.example.serving_web_content.Repo.ComRepository;
@@ -89,12 +89,8 @@ public class BlogController {
         return "redirect:/blog";
     }
     @PostMapping("/blog/{id}/remove")
-    public String blogPostDelete(@PathVariable ("id") long id,Model model,
-                                 @AuthenticationPrincipal UserDetails userDetails) {
+    public String blogPostDelete(@PathVariable ("id") long id) {
         Post post = postRepository.findById(id).orElseThrow();
-        boolean isAuthor = post.getUser().getUsername().equals(userDetails.getUsername());
-        boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(a ->
-                a.getAuthority().equals("ROLE_ADMIN"));
         List<Comments> commentsToDelete = comRepository.findByPost(post);
         if (commentsToDelete != null && !commentsToDelete.isEmpty()) {
             comRepository.deleteAll(commentsToDelete);

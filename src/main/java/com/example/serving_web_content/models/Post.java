@@ -10,7 +10,6 @@ public class Post {
     @ManyToOne
     @JoinColumn(name = "userid")
     private Users user;
-
     private String title;
     private String text;
     private String anons;
