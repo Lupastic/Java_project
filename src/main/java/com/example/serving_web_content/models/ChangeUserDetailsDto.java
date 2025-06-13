@@ -6,7 +6,7 @@ public class ChangeUserDetailsDto {
     private String confirmNewPassword;
     private String newEmail;
     private Long targetUserId;
-
+    private Long cityId;
     public String getNewUsername() {return newUsername;}
     public void setNewUsername(String newUsername) {this.newUsername = newUsername;}
     public String getNewPassword() {return newPassword;}
@@ -17,4 +17,6 @@ public class ChangeUserDetailsDto {
     public void setEmail(String newEmail) {this.newEmail = newEmail;}
     public Long getTargetUserId() {return targetUserId;}
     public void setTargetUserId(Long targetUserId) {this.targetUserId = targetUserId;}
+    public Long getCityId() {return cityId;}
+    public void setCityId(Long cityId) {this.cityId = cityId;}
 }

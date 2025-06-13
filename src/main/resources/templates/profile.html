@@ -11,18 +11,15 @@
 <div class="container mt-5">
     <div class="card">
         <div class="card-header bg-primary text-white">
-            <h4>Welcome, <span sec:authentication="name">User</span>!</h4>
+            <h4>Добро пожаловать, <span th:text="${user.username}">User</span>!</h4>
         </div>
         <div class="card-body">
-            <p class="mb-3"><strong>Username:</strong> <span sec:authentication="name">username</span></p>
-            <p><strong>Roles:</strong>
-            <ul>
-                <li sec:authorize="hasRole('USER')">USER</li>
-                <li sec:authorize="hasRole('ADMIN')">ADMIN</li>
-            </ul>
-            </p>
-            <a th:href="@{/change}" class="btn btn-secondary me-2">Change Details</a>
-            <a th:href="@{/logout}" class="btn btn-danger">Logout</a>
+            <p class="mb-3"><strong>Username:</strong> <span th:text="${user.username}">username</span></p>
+            <p class="mb-3"><strong>Email:</strong> <span th:text="${user.email}">email@example.com</span></p>
+            <p class="mb-3"><strong>Город:</strong> <span th:text="${city}">Not specified</span></p>
+            <p class="mb-3"><strong>Роль:</strong> <span th:text="${user.role}">USER</span></p>
+            <a th:href="@{/change}" class="btn btn-secondary me-2">Изменить детали</a>
+            <a th:href="@{/logout}" class="btn btn-danger">Выйти</a>
         </div>
     </div>
 </div>

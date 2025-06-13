@@ -17,6 +17,9 @@ public class Users {
     private String role = "USER";
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name ="city_id")
+    private City city;
     public void setUsername(String username) {
         this.username = username;
     }
@@ -45,5 +48,13 @@ public class Users {
 
     public String getEmail() {
         return email;
+    }
+
+    public void setCity(City city) {
+        this.city = city;
+    }
+
+    public City getCity() {
+        return city;
     }
 }

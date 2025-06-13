@@ -1,7 +1,10 @@
 package com.example.serving_web_content.Controllers;
 
+import com.example.serving_web_content.Repo.CityRepository;
 import com.example.serving_web_content.models.ChangeUserDetailsDto;
+import com.example.serving_web_content.models.City;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,13 +29,17 @@ public class userController {
     private final UsersRepository usersRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final CityRepository cityRepository;
 
+    @Autowired
     public userController(UsersRepository usersRepository,
                           PasswordEncoder passwordEncoder,
-                          AuthenticationManager authenticationManager) {
+                          AuthenticationManager authenticationManager,
+                          CityRepository cityRepository) {
         this.usersRepository = usersRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
+        this.cityRepository = cityRepository;
     }
 
     @GetMapping("/register")
@@ -106,12 +113,6 @@ public class userController {
 
         Users currentUser = usersRepository.findByUsername(username);
 
-        if (currentUser == null) {
-            model.addAttribute("errorMessage", "Пользователь не найден. Войдите заново.");
-            SecurityContextHolder.clearContext();
-            return "redirect:/login";
-        }
-
         Users targetUser = (userIdParam != null && userIdParam.equals(currentUser.getId()))
                 ? currentUser
                 : currentUser;
@@ -120,9 +121,9 @@ public class userController {
         dto.setEmail(targetUser.getEmail());
 
         model.addAttribute("changeDetailsDto", dto);
-        model.addAttribute("isCurrentUserAdmin", false); // можно удалить из шаблона
-        model.addAttribute("changingOtherUser", false);  // можно удалить из шаблона
-
+        model.addAttribute("isCurrentUserAdmin", false);
+        model.addAttribute("changingOtherUser", false);
+        model.addAttribute("cities", cityRepository.findAll());
         return "changeDetails";
     }
 
@@ -151,7 +152,14 @@ public class userController {
             String encodedPassword = passwordEncoder.encode(dto.getNewPassword());
             userToUpdate.setPassword(encodedPassword);
         }
+        City selectedCity = null;
+        if (dto.getCityId() != null) {
+            Optional<City> optionalCity = cityRepository.findById(dto.getCityId());
+            selectedCity = optionalCity.get();
+        }
+        userToUpdate.setCity(selectedCity);
         usersRepository.save(userToUpdate);
+        model.addAttribute("cities", cityRepository.findAll());
         model.addAttribute("successMessage", "Данные успешно обновлены.");
         return "redirect:/profile";
     }
@@ -184,8 +192,10 @@ public class userController {
         dto.setTargetUserId(user.getId());
         dto.setNewUsername(user.getUsername());
         dto.setEmail(user.getEmail());
+
         model.addAttribute("changingOtherUser", true);
         model.addAttribute("changeDetailsDto", dto);
+        model.addAttribute("cities", cityRepository.findAll());
         return "changeUser";
     }@PostMapping("/changeUser")
     public String changeUserPost(@ModelAttribute("changeDetailsDto") ChangeUserDetailsDto dto,
@@ -203,7 +213,14 @@ public class userController {
             String encodedPassword = passwordEncoder.encode(dto.getNewPassword());
             userToUpdate.setPassword(encodedPassword);
         }
+        City selectedCity = null;
+        if (dto.getCityId() != null) {
+            Optional<City> optionalCity = cityRepository.findById(dto.getCityId());
+            selectedCity = optionalCity.get();
+        }
+        userToUpdate.setCity(selectedCity);
         usersRepository.save(userToUpdate);
+        model.addAttribute("cities", cityRepository.findAll());
         model.addAttribute("successMessage", "Данные пользователя успешно обновлены.");
         return "redirect:/admin/users";
     }
