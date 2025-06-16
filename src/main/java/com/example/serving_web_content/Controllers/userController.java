@@ -1,8 +1,10 @@
 package com.example.serving_web_content.Controllers;
 
 import com.example.serving_web_content.Repo.CityRepository;
+import com.example.serving_web_content.Repo.UsersRepository;
 import com.example.serving_web_content.models.ChangeUserDetailsDto;
 import com.example.serving_web_content.models.City;
+import com.example.serving_web_content.models.Users;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,15 +14,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import com.example.serving_web_content.Repo.UsersRepository;
-import com.example.serving_web_content.models.Users;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.security.Principal;
 import java.util.Optional;
 
 @Controller
@@ -180,6 +179,7 @@ public class userController {
         redirectAttributes.addFlashAttribute("successMessage", "Пользователь успешно удалён.");
         return "redirect:/admin/users";
     }
+
     @GetMapping("/admin/users/{id}")
     public String changeUser(@PathVariable("id") Long id, Model model) {
         Optional<Users> userOptional = usersRepository.findById(id);
@@ -197,7 +197,9 @@ public class userController {
         model.addAttribute("changeDetailsDto", dto);
         model.addAttribute("cities", cityRepository.findAll());
         return "changeUser";
-    }@PostMapping("/changeUser")
+    }
+
+    @PostMapping("/changeUser")
     public String changeUserPost(@ModelAttribute("changeDetailsDto") ChangeUserDetailsDto dto,
                                  Model model) {
         Optional<Users> optionalUser = usersRepository.findById(dto.getTargetUserId());

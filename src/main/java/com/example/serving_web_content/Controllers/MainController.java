@@ -33,10 +33,10 @@ public class MainController {
         return "about";
     }
 
-    @GetMapping("/support")
+    @GetMapping("/Support")
     public String support(Model model) {
         model.addAttribute("title", "Поддержка");
-        return "support";
+        return "Support";
     }
     @GetMapping("/profile")
     @PreAuthorize("isAuthenticated()")
