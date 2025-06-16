@@ -26,7 +26,6 @@ import java.util.Optional;
 public class BlogController {
     @ManyToOne
     @JoinColumn(name = "userid", nullable = false)
-    private Users user;
 
     @Autowired
     private PostRepository postRepository;
@@ -50,7 +49,7 @@ public class BlogController {
     @PostMapping("/blog/add")
     public String blogPostAdd(@RequestParam String title,@RequestParam String anons,
                               @AuthenticationPrincipal UserDetails userDetails,
-                              @RequestParam String text ,Model model) {
+                              @RequestParam String text) {
         Post post = new Post(title,anons,text);
         Users user = usersRepository.findByUsername(userDetails.getUsername());
         post.setUser(user);
@@ -65,7 +64,6 @@ public class BlogController {
         List<Comments> comms = comRepository.findByPost(post);
         model.addAttribute("post", post);
         model.addAttribute("comms", comms);
-
         return "blog-details";
     }
 
@@ -80,7 +78,7 @@ public class BlogController {
     }
     @PostMapping("/blog/{id}/edit")
     public String blogPostUpdate(@PathVariable ("id") long id,@RequestParam String title,
-                                 @RequestParam String anons,@RequestParam String text ,Model model) {
+                                 @RequestParam String anons,@RequestParam String text) {
         Post post = postRepository.findById(id).orElseThrow();
         post.setTitle(title);
         post.setAnons(anons);

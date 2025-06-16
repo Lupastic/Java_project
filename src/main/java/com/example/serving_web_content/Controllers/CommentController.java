@@ -1,53 +1,75 @@
 package com.example.serving_web_content.Controllers;
 
-import com.example.serving_web_content.Repo.ComRepository;
-import com.example.serving_web_content.Repo.PostRepository;
-import com.example.serving_web_content.Repo.UsersRepository;
-import com.example.serving_web_content.models.Comments;
-import com.example.serving_web_content.models.Post;
-import com.example.serving_web_content.models.Users;
+import com.example.serving_web_content.DTO.comment.CreateCommentRequestDto;
+import com.example.serving_web_content.DTO.comment.UpdateCommentRequestDTO;
+import com.example.serving_web_content.service.comments.CommentOperationResult;
+import com.example.serving_web_content.service.comments.ComServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class CommentController {
-    @Autowired
-    private PostRepository postRepository;
-    @Autowired
-    private ComRepository comRepository;
-    @Autowired
-    private UsersRepository usersRepository;
+    private final ComServiceImpl comService;
 
+    @Autowired
+    public CommentController(ComServiceImpl comService) {
+        this.comService = comService;
+    }
 
     @PostMapping("/comm/add")
-    public String commPostAdd(@RequestParam(value = "postId") long postId, @RequestParam("commentText") String commentText, @AuthenticationPrincipal UserDetails userDetails, Model model) {
-        Comments comm = new Comments(commentText);
-        Post post = postRepository.findById(postId).orElseThrow();
-        Users user = usersRepository.findByUsername(userDetails.getUsername());
-        comm.setUser(user);
-        comm.setPost(post);
-        comRepository.save(comm);
-        return "redirect:/blog/" + postId;
+        public String commPostAdd(@ModelAttribute CreateCommentRequestDto dto,
+                                  @AuthenticationPrincipal UserDetails userDetails,
+                                  RedirectAttributes redirectAttributes) {
+
+
+        CommentOperationResult result = comService.createComment(
+                dto.getPostID(),
+                dto.getComment(),
+                userDetails.getUsername());
+
+        if (result.isSuccess()) {
+            redirectAttributes.addFlashAttribute("successMessage", "Комментарий успешно добавлен!");
+            return "redirect:/blog/" + result.getPostIdForRedirect();
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Не удалось добавить комментарий: " + result.getErrorMessage());
+                return "redirect:/blog";
+        }
     }
+
     @PostMapping("/comm/update")
-    public String updateComment(@RequestParam("id") long commentId,@RequestParam("comment") String commentText, @AuthenticationPrincipal UserDetails userDetails) {
-        Comments comm = comRepository.findById(commentId).orElseThrow();
-        comm.setComment(commentText);
-        comRepository.save(comm);
-        long postId = comm.getPost().getId();
-        return "redirect:/blog/" + postId;
+    public String updateComment(@ModelAttribute UpdateCommentRequestDTO dto,
+                                @AuthenticationPrincipal UserDetails userDetails,
+                                RedirectAttributes redirectAttributes) {
+        CommentOperationResult result = comService.updateComment(
+                dto.getCommentID(),
+                dto.getComment(),
+                userDetails.getUsername());
+        if (result.isSuccess()) {
+            redirectAttributes.addFlashAttribute("successMessage", "Комментарий успешно обновлен!");
+            return "redirect:/blog/" + result.getPostIdForRedirect();
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Не удалось обновить комментарий: " + result.getErrorMessage());
+            return "redirect:/blog";
+        }
     }
     @PostMapping("/comm/delete")
-    public String removeComment(@RequestParam("id") long commentId, @AuthenticationPrincipal UserDetails userDetails) {
-        Comments comm = comRepository.findById(commentId).orElseThrow();
-        long postId = comm.getPost().getId();
-        comRepository.deleteById(commentId);
-        return "redirect:/blog/" + postId;
+    public String removeComment(@ModelAttribute UpdateCommentRequestDTO dto,
+                                @AuthenticationPrincipal UserDetails userDetails,
+                                RedirectAttributes redirectAttributes) {
+        CommentOperationResult result = comService.deleteComment(
+                dto.getCommentID(),
+                userDetails.getUsername());
+        if (result.isSuccess()) {
+            redirectAttributes.addFlashAttribute("successMessage", "Комментарий успешно удален!");
+            return "redirect:/blog/" + result.getPostIdForRedirect();
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Не удалось удалить комментарий: " + result.getErrorMessage());
+            return "redirect:/blog";
+        }
     }
 }

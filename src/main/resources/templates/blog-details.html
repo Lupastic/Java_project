@@ -43,9 +43,9 @@
         <h3>Оставить комментарий</h3>
         <div sec:authorize="isAuthenticated()">
             <form th:action="@{/comm/add}" method="post">
-                <input type="hidden" name="postId" th:value="${post.id}"/>
+                <input type="hidden" name="postID" th:value="${post.id}"/>
                 <div class="mb-3">
-                    <textarea class="form-control" name="commentText" rows="3" placeholder="Напишите ваш комментарий..." required></textarea>
+                    <textarea class="form-control" name="comment" rows="3" placeholder="Напишите ваш комментарий..." required></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary">Отправить комментарий</button>
             </form>
@@ -101,7 +101,6 @@
     </div>
 </div>
 
-<!-- Modal for delete confirmation -->
 <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -120,7 +119,6 @@
     </div>
 </div>
 
-<!-- Scripts -->
 <script th:inline="javascript">
     let commentToDeleteId = null;
 
@@ -131,18 +129,18 @@
         new bootstrap.Toast(toast).show();
     }
 
-    function showEditForm(commentId) {
+    function showEditForm(commentID) {
         document.querySelectorAll('.edit-form').forEach(form => {
-            if (form.id !== 'edit-form-' + commentId) {
+            if (form.id !== 'edit-form-' + commentID) {
                 form.style.display = 'none';
             }
         });
-        const form = document.getElementById('edit-form-' + commentId);
+        const form = document.getElementById('edit-form-' + commentID);
         form.style.display = form.style.display === 'none' ? 'block' : 'none';
     }
 
-    function submitEdit(commentId) {
-        const input = document.getElementById('edit-input-' + commentId);
+    function submitEdit(commentID) {
+        const input = document.getElementById('edit-input-' + commentID);
         const newText = input.value.trim();
 
         if (!newText) {
@@ -153,18 +151,21 @@
         fetch('/comm/update', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `id=${commentId}&comment=${encodeURIComponent(newText)}`
+            body: `commentID=${commentID}&comment=${encodeURIComponent(newText)}` // <-- CHANGED HERE
         })
             .then(res => {
-                if (res.ok) location.reload();
+                if (res.ok) location.reload(); // Reload on success
                 else if (res.status === 403) showToast('Нет прав для редактирования.');
-                else showToast('Ошибка: ' + res.status);
+                else {
+                    // Try to get error message from response if available
+                    res.text().then(text => showToast('Ошибка: ' + text || res.status));
+                }
             })
             .catch(() => showToast('Ошибка сети.'));
     }
 
-    function deleteComment(commentId) {
-        commentToDeleteId = commentId;
+    function deleteComment(commentID) {
+        commentToDeleteId = commentID;
         new bootstrap.Modal(document.getElementById('confirmDeleteModal')).show();
     }
 
@@ -172,12 +173,14 @@
         fetch('/comm/delete', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `id=${commentToDeleteId}`
+            body: `commentID=${commentToDeleteId}`
         })
             .then(res => {
                 if (res.ok) location.reload();
                 else if (res.status === 403) showToast('Нет прав для удаления.');
-                else showToast('Ошибка: ' + res.status);
+                else {
+                    res.text().then(text => showToast('Ошибка: ' + text || res.status));
+                }
             })
             .catch(() => showToast('Ошибка сети.'));
     });
