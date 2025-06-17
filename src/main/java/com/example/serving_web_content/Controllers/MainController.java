@@ -43,9 +43,7 @@ public class MainController {
     public String userProfile(Model model, Principal principal) {
         String username = principal.getName();
         Users currentUser = usersRepository.findByUsername(username);
-
         if (currentUser == null) {
-            // Симулированный пользователь (например, admin)
             Object principalObject = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             if (principalObject instanceof UserDetails userDetails) {
                 model.addAttribute("username", userDetails.getUsername());
@@ -59,8 +57,6 @@ public class MainController {
             model.addAttribute("title", "Simulated Profile");
             return "profile_simulated";
         }
-
-        // Реальный пользователь
         model.addAttribute("user", currentUser);
         model.addAttribute("city", currentUser.getCity() != null ? currentUser.getCity().getName() : "Not specified");
         model.addAttribute("title", "Профиль пользователя");

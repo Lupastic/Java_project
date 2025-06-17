@@ -1,18 +1,23 @@
 package com.example.serving_web_content.service.comments;
 import com.example.serving_web_content.DTO.comment.CreateCommentRequestDto;
 import com.example.serving_web_content.DTO.comment.UpdateCommentRequestDTO;
-import com.example.serving_web_content.service.comments.comInterface;
+import com.example.serving_web_content.DTO.user.ChangeDetailsFormData;
+import com.example.serving_web_content.Repo.CityRepository;
 import com.example.serving_web_content.Repo.ComRepository;
 import com.example.serving_web_content.Repo.PostRepository;
 import com.example.serving_web_content.Repo.UsersRepository;
+import com.example.serving_web_content.DTO.user.ChangeUserDetailsDto;
 import com.example.serving_web_content.models.Comments;
 import com.example.serving_web_content.models.Post;
 import com.example.serving_web_content.models.Users;
 import com.example.serving_web_content.service.comments.CommentOperationResult.Status;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+
+import java.util.Optional;
 
 @Service
 public class ComServiceImpl implements comInterface {
@@ -20,13 +25,15 @@ public class ComServiceImpl implements comInterface {
     private final ComRepository comRepository;
     private final UsersRepository usersRepository;
     private final PostRepository postRepository;
+    private final CityRepository cityRepository;
 
     @Autowired
-    public ComServiceImpl(CommentMapper commentMapper, ComRepository comRepository, UsersRepository usersRepository, PostRepository postRepository) {
+    public ComServiceImpl(CommentMapper commentMapper, ComRepository comRepository, UsersRepository usersRepository, PostRepository postRepository, CityRepository cityRepository) {
         this.commentMapper = commentMapper;
         this.comRepository = comRepository;
         this.usersRepository = usersRepository;
         this.postRepository = postRepository;
+        this.cityRepository = cityRepository;
     }
 
     @Override
@@ -48,11 +55,6 @@ public class ComServiceImpl implements comInterface {
         if (user == null) {
             return CommentOperationResult.failure(Status.NOT_FOUND, postID, "Authenticated user not found: " + username);
         }
-        Comments comments = new Comments();
-        comments.setComment(commentText);
-        comments.setPost(post);
-        comments.setUser(user);
-
         CreateCommentRequestDto dto = new CreateCommentRequestDto();
         dto.setPostID(postID);
         dto.setComment(commentText);
@@ -84,19 +86,11 @@ public class ComServiceImpl implements comInterface {
     @Override
     @Transactional
     public CommentOperationResult updateComment(Long commentID, String newCommentText, String username) {
-        if (commentID == null) {
-            return CommentOperationResult.failure(Status.INVALID_DATA, null, "Comment ID is required");
-        }
         if (!StringUtils.hasText(newCommentText)) {
             return CommentOperationResult.failure(Status.INVALID_DATA, null, "Comment text cannot be empty");
         }
         newCommentText = newCommentText.trim();
-
         Comments commToUpdate = comRepository.findById(commentID).orElse(null);
-        if (commToUpdate == null) {
-            return CommentOperationResult.failure(Status.NOT_FOUND, null, "Comment not found with ID: " + commentID);
-        }
-
         UpdateCommentRequestDTO dto = new UpdateCommentRequestDTO();
         dto.setComment(newCommentText);
         dto.setCommentID(commentID);

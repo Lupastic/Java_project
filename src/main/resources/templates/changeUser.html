@@ -22,7 +22,7 @@
     <p class="success-message" th:if="${successMessage}" th:text="${successMessage}"></p>
     <p class="info-message" th:if="${infoMessage}" th:text="${infoMessage}"></p>
 
-    <form th:action="@{/changeUser}" th:object="${changeDetailsDto}" method="post">
+    <form th:action="@{/admin/users/{id}(id=${targetUserId})}" th:object="${changeDetailsDto}" method="post">
         <input type="hidden" th:field="*{targetUserId}" th:if="${changingOtherUser}" />
 
         <div class="form-group">

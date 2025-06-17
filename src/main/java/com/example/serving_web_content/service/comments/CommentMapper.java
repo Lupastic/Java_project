@@ -1,7 +1,6 @@
 package com.example.serving_web_content.service.comments;
 
 import com.example.serving_web_content.DTO.comment.CreateCommentRequestDto;
-import com.example.serving_web_content.DTO.comment.UpdateCommentRequestDTO;
 import com.example.serving_web_content.models.Comments;
 import com.example.serving_web_content.models.Post;
 import com.example.serving_web_content.models.Users;
@@ -14,10 +13,6 @@ public class CommentMapper {
         comment.setComment(dto.getComment());
         comment.setPost(post);
         comment.setUser(user);
-        return comment;
-    }
-    public Comments updateEntity(Comments comment, UpdateCommentRequestDTO dto) {
-        comment.setComment(dto.getComment());
         return comment;
     }
 }

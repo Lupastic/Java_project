@@ -2,8 +2,6 @@ package com.example.serving_web_content.models;
 
 import jakarta.persistence.*;
 
-import java.util.List;
-
 @Entity
 @Table(name = "users")
 public class Users {
@@ -15,8 +13,6 @@ public class Users {
     private String password;
     private String email;
     private String role = "USER";
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Post> posts;
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name ="city_id")
     private City city;

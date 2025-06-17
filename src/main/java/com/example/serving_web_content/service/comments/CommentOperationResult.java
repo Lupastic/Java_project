@@ -27,16 +27,6 @@ public class CommentOperationResult {
         return new CommentOperationResult(Status.SUCCESS, postIdForRedirect, null);
     }
 
-    public static CommentOperationResult failure(Status status, String errorMessage) {
-        if (status == Status.SUCCESS) {
-            throw new IllegalArgumentException("Cannot use failure() method for SUCCESS status");
-        }
-        if (errorMessage == null || errorMessage.trim().isEmpty()) {
-            errorMessage = "Operation failed";
-        }
-        return new CommentOperationResult(status, null, errorMessage);
-    }
-
     public static CommentOperationResult failure(Status status, Long postIdIfKnown, String errorMessage) {
         if (status == Status.SUCCESS) {
             throw new IllegalArgumentException("Cannot use failure() method for SUCCESS status");
@@ -47,9 +37,9 @@ public class CommentOperationResult {
         return new CommentOperationResult(status, postIdIfKnown, errorMessage);
     }
 
-    public Status getStatus() {
-        return status;
-    }
+        public Status getStatus() {
+            return status;
+        }
 
     public boolean isSuccess() {
         return this.status == Status.SUCCESS;
