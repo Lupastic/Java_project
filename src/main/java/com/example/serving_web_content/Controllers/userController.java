@@ -126,10 +126,10 @@ public class userController {
     @GetMapping("/admin/users")
     @PreAuthorize("hasRole('ADMIN')")
     public String adminUsers(@RequestParam(name = "page",defaultValue = "0") int pageNumber,
-                             @RequestParam(name = "size", defaultValue = "9") int pageSize,
+                             @RequestParam(name = "size", defaultValue = "5") int pageSize,
                              @RequestParam(name = "usernameSearchTerm", required = false) String usernameSearchTerm,
                              Model model) {
-        Page<Users> usersPage = usersService.findAll(PageRequest.of(pageNumber, pageSize));
+        Page<Users> usersPage = usersService.findUsers(PageRequest.of(pageNumber, pageSize), usernameSearchTerm);
         model.addAttribute("usersPage", usersPage);
         model.addAttribute("usernameSearchTerm", usernameSearchTerm);
         return "allUsers";

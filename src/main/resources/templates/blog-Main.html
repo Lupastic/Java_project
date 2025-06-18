@@ -18,8 +18,8 @@
 <header th:insert="blocks/header :: header"></header>
 
 <div class="container mt-5">
-    <h1 class="display-5 ">📝 Blog Page</h1>
-    <div class="d-flex justify-content-between align-items-center mb-4" sec:authorize="hasRole('GUEST')">
+    <h1 class="display-5 mb-4">📝 Blog Page</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4" sec:authorize="!hasRole('GUEST')">
         <a th:href="@{/blog/add}" class="btn btn-success btn-lg">+ Добавить пост</a>
     </div>
 
