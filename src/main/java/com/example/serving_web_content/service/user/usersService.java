@@ -7,10 +7,13 @@ import com.example.serving_web_content.Repo.CityRepository;
 import com.example.serving_web_content.Repo.UsersRepository;
 import com.example.serving_web_content.models.City;
 import com.example.serving_web_content.models.Users;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -85,15 +88,27 @@ public class usersService implements UserInterface {
         Users userToUpdate = userOpt.get();
         return applyUserDetailsUpdate(userToUpdate, dto);
     }
-
-    @Override
+        @Override
+        public Page<Users> findUsers(Pageable pageable, String usernameSearchTerm) {
+        if (StringUtils.hasText(usernameSearchTerm)) {
+            return usersRepository.findByUsernameContainingIgnoreCase(usernameSearchTerm.trim(), pageable);
+        } else {
+            return usersRepository.findAll(pageable);
+        }
+    }
     public Optional<Users> findByUsername(String username) {
-        return Optional.ofNullable(usersRepository.findByUsername(username));
+        Users user = usersRepository.findByUsername(username);
+        return Optional.ofNullable(user);
     }
 
     @Override
     public Optional<Users> findById(Long id) {
         return usersRepository.findById(id);
+    }
+
+    @Override
+    public Page<Users> findAll(Pageable pageable) {
+        return usersRepository.findAll(pageable);
     }
 
     @Override

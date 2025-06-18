@@ -1,49 +1,66 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head>
-    <title>Список всех пользователей</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        .user-card {
-            cursor: pointer;
-            height: 100%;
-        }
-        .user-card:hover {
-            border-color: #007bff;
-            box-shadow: 0 0 8px rgba(0, 123, 255, 0.25);
-        }
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 1px solid rgba(0, 0, 0, .125);
-        }
-    </style>
-</head>
-<body>
-<div class="container mt-4">
+    <!DOCTYPE html>
+    <html xmlns:th="http://www.thymeleaf.org"
+          xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <head>
+        <title>Список всех пользователей</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <style>
+            .user-card {
+                height: 100%;
+            }
+            .action-buttons {
+                display: flex;
+                gap: 10px;
+                margin-top: 15px;
+                padding-top: 10px;
+                border-top: 1px solid rgba(0, 0, 0, .125);
+            }
+            .clickable-card-body.admin {
+                cursor: pointer;
+            }
+            .clickable-card-body.admin:hover {
+                border-color: #007bff;
+                box-shadow: 0 0 8px rgba(0, 123, 255, 0.25);
+            }
+        </style>
+    </head>
+    <body>
+    <div class="container mt-4">
 
-    <h2>Список всех пользователей</h2>
+        <h2>Список всех пользователей</h2>
 
-    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
-        <span th:text="${successMessage}">Успешно!</span>
-        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-    </div>
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}">Успешно!</span>
+            <button type="button" class="close" data-dismiss="alert"><span>×</span></button>
+        </div>
 
-    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
-        <span th:text="${errorMessage}">Ошибка!</span>
-        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-    </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}">Ошибка!</span>
+            <button type="button" class="close" data-dismiss="alert"><span>×</span></button>
+        </div>
+        <form method="get" th:action="@{/admin/users}" class="mb-4">
+            <div class="form-row">
+                <div class="col-md-6 mb-3">
+                    <label for="usernameSearchTerm">Поиск по имени пользователя</label>
+                    <input type="text" class="form-control" id="usernameSearchTerm" name="usernameSearchTerm" placeholder="Введите имя пользователя" th:value="${param.usernameSearchTerm}">
+                </div>
+                <div class="col-md-3 mb-3 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" type="submit">Найти</button>
+                </div>
+            </div>
+        </form>
+        <div th:if="${usersPage.totalElements == 0}" class="alert alert-info">
+            Не найдено пользователей по заданным критериям.
+        </div>
 
-    <div class="row">
-        <div th:each="user : ${users}" class="col-md-6 col-lg-4 mb-4">
-            <div sec:authorize="hasRole('ADMIN')">
-                <div class="card user-card" th:data-url="@{/admin/users/{id}(id=${user.id})}">
-                    <div class="card-body">
+
+        <div class="row">
+            <div th:each="user : ${usersPage.getContent()}" class="col-md-6 col-lg-4 mb-4">
+                <div class="card user-card">
+                    <!-- sec:authorize теперь внутри тела карточки, чтобы только кликабельная часть была доступна админам -->
+                    <div sec:authorize="hasRole('ADMIN')" class="card-body clickable-card-body admin" th:data-url="@{/admin/users/{id}(id=${user.id})}">
                         <h5 class="card-title" th:text="${user.username}">Имя пользователя</h5>
                         <p class="card-text">
                             <strong>ID:</strong> <span th:text="${user.id}">1</span><br>
@@ -51,7 +68,7 @@
                             <strong>Роль:</strong> <span th:text="${user.role}">ROLE</span>
                         </p>
                         <div class="action-buttons">
-                            <form th:action="@{/admin/users/delete}" method="post" class="delete-user-form">
+                            <form th:action="@{/admin/users/delete}" method="post" class="delete-user-form" th:data-username="${user.username}" th:data-userid="${user.id}">
                                 <input type="hidden" name="id" th:value="${user.id}">
                                 <button type="button" class="btn btn-danger btn-sm delete-user-button">
                                     Удалить
@@ -59,12 +76,8 @@
                             </form>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div sec:authorize="!hasRole('ADMIN')">
-                <div class="card h-100">
-                    <div class="card-body">
+                    <div sec:authorize="!hasRole('ADMIN')" class="card-body">
                         <h5 class="card-title" th:text="${user.username}">Имя пользователя</h5>
                         <p class="card-text">
                             <strong>ID:</strong> <span th:text="${user.id}">1</span><br>
@@ -75,91 +88,98 @@
                 </div>
             </div>
         </div>
+
+    <!-- Блок пагинации -->
+    <div th:if="${usersPage.totalPages > 0}" class="pagination-container mt-4">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+
+                <!-- Кнопка "Предыдущая страница" -->
+                <li class="page-item" th:classappend="${usersPage.isFirst()} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/admin/users(page=${usersPage.number - 1}, size=${usersPage.size}, usernameSearchTerm=${param.usernameSearchTerm})}"
+                       aria-label="Previous">
+                        <span aria-hidden="true">«</span> Предыдущая
+                    </a>
+                </li>
+
+                <!-- Ссылки на номера страниц -->
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, usersPage.totalPages - 1)}"
+                    th:classappend="${i == usersPage.number} ? 'active'">
+                    <a class="page-link"
+                       th:href="@{/admin/users(page=${i}, size=${usersPage.size}, usernameSearchTerm=${param.usernameSearchTerm})}">
+                        <span th:text="${i + 1}">1</span>
+                    </a>
+                </li>
+                <li class="page-item" th:classappend="${usersPage.isLast()} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/admin/users(page=${usersPage.number + 1}, size=${usersPage.size}, usernameSearchTerm=${param.usernameSearchTerm})}"
+                       aria-label="Next">
+                        Следующая <span aria-hidden="true">»</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <div class="text-center mt-2" th:if="${usersPage.totalElements > 0}">
+            Показано <span th:text="${usersPage.size * usersPage.number + 1}">1</span>
+            - <span th:text="${usersPage.size * usersPage.number + usersPage.getNumberOfElements()}">9</span>
+            из <span th:text="${usersPage.totalElements}">50</span> пользователей
+            (Страница <span th:text="${usersPage.number + 1}">1</span> из <span th:text="${usersPage.totalPages}">6</span>)
+        </div>
     </div>
 
-    <div class="mt-4">
-        <a href="/" class="btn btn-secondary">На главную</a>
+        <div class="mt-4">
+            <a href="/" class="btn btn-secondary">На главную</a>
+        </div>
     </div>
-</div>
 
-<div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Подтверждение удаления</h5>
-                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-            </div>
-            <div class="modal-body">
-                Вы уверены, что хотите удалить пользователя?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteButton">Удалить</button>
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteLabel">Подтверждение удаления</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>×</span></button>
+                </div>
+                <div class="modal-body">
+                    Вы уверены, что хотите удалить пользователя?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteButton">Удалить</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
-
-<!-- JS + Bootstrap -->
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
         let formToSubmit = null;
-
         $(document).ready(function () {
             $('.delete-user-button').on('click', function (event) {
-                event.stopPropagation(); // Не даём карточке сработать
+                event.stopPropagation();
                 formToSubmit = $(this).closest('form');
-                const username = $(this).closest('.card-body').find('.card-title').text();
-                const userId = formToSubmit.find('input[name="id"]').val();
-
+                const username = formToSubmit.data('username');
+                const userId = formToSubmit.data('userid');
                 $('#confirmDeleteModal .modal-body').html(
                     `Вы уверены, что хотите удалить пользователя <strong>${username}</strong> с ID <strong>${userId}</strong>?`
                 );
                 $('#confirmDeleteModal').modal('show');
             });
-
             $('#confirmDeleteButton').on('click', function () {
                 if (formToSubmit) {
                     formToSubmit.submit();
                 }
             });
-            $('.user-card').on('click', function() {
-                const url = $(this).data('url');
-                if (url) {
-                    window.location.href = url;
-                }
-            });
-            $('.user-card').on('click', function (event) {
-                if (!$(event.target).closest('.delete-user-button').length) {
+            $('.clickable-card-body.admin').on('click', function(event) {
+                if (!$(event.target).closest('.delete-user-form').length) {
                     const url = $(this).data('url');
-                    window.location.href = url;
+                    if (url) {
+                        window.location.href = url;
+                    }
                 }
             });
         });
     </script>
-<script>
-    $(document).ready(function() {
-        $('.user-card').click(function() {
-            const url = $(this).data('url');
-            if (url) {
-                window.location.href = url;
-            }
-        });
-
-        $('.delete-user-button').click(function() {
-            formToSubmit = $(this).closest('form');
-            $('#confirmDeleteModal').modal('show');
-        });
-
-        $('#confirmDeleteButton').click(function () {
-            if (formToSubmit) {
-                formToSubmit.submit();
-            }
-        });
-    });
-</script>
-
-</body>
-</html>
+    </body>
+    </html>

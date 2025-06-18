@@ -3,10 +3,8 @@ package com.example.serving_web_content.service.blog;
 import com.example.serving_web_content.DTO.blog.CreateBlogRequestDto;
 import com.example.serving_web_content.Repo.PostRepository;
 import com.example.serving_web_content.Repo.UsersRepository;
-import com.example.serving_web_content.models.Comments;
 import com.example.serving_web_content.models.Post;
 import com.example.serving_web_content.models.Users;
-import com.example.serving_web_content.service.comments.CommentOperationResult;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,12 +13,17 @@ import java.util.Optional;
 
 @Service
 public class blogService implements blogInterface {
-
+    private final BlogMapping blogMapping;
     @Autowired
     private UsersRepository usersRepository;
 
     @Autowired
     private PostRepository postRepository;
+    public blogService(BlogMapping blogMapping, UsersRepository usersRepository, PostRepository postRepository) {
+        this.blogMapping = blogMapping;
+        this.usersRepository = usersRepository;
+        this.postRepository = postRepository;
+    }
 
     @Override
     public blogOperationRresult createPost(String postTitle, String postAnons, String postText, String username) {
@@ -30,7 +33,8 @@ public class blogService implements blogInterface {
         dto.setAnons(postAnons);
         dto.setText(postText);
         dto.setUserID(userOptional.getId());
-        Post savedBlog = postRepository.save(mapToBlog(dto, userOptional));
+        Post post = blogMapping.mapToBlog(dto, userOptional);
+        Post savedBlog = postRepository.save(post);
         return blogOperationRresult.success(savedBlog.getId());
     }
 
@@ -89,13 +93,4 @@ public class blogService implements blogInterface {
         return blogOperationRresult.success(postID);
     }
 
-
-    private Post mapToBlog(CreateBlogRequestDto dto, Users user) {
-        Post blog = new Post();
-        blog.setTitle(dto.getTitle());
-        blog.setAnons(dto.getAnons());
-        blog.setText(dto.getText());
-        blog.setUser(user);
-        return blog;
-    }
 }

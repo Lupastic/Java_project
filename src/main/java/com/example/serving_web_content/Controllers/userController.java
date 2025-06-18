@@ -1,8 +1,6 @@
 package com.example.serving_web_content.Controllers;
-
 import com.example.serving_web_content.DTO.user.ChangeDetailsFormData;
 import com.example.serving_web_content.DTO.user.CreateUserRequestDto;
-import com.example.serving_web_content.DTO.user.UpdateUserRequestDto;
 import com.example.serving_web_content.Repo.CityRepository;
 import com.example.serving_web_content.Repo.UsersRepository;
 import com.example.serving_web_content.DTO.user.ChangeUserDetailsDto;
@@ -11,18 +9,21 @@ import com.example.serving_web_content.service.user.UserOperationResult;
 import com.example.serving_web_content.service.user.usersService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -60,13 +61,7 @@ public class userController {
     @PostMapping("/register")
     public String registerUser(@ModelAttribute("user") CreateUserRequestDto userDto) {
         UserOperationResult result = usersService.createUser(userDto);
-        if (result.isSuccess()) {
-            return "redirect:/login";
-        }
-        else {
-            return "redirect:/register";
-        }
-
+        return "redirect:/login";
     }
 
     @PostMapping("/guest")
@@ -105,13 +100,8 @@ public class userController {
         model.addAttribute("changingOtherUser", formData.isChangingOtherUser());
         model.addAttribute("isCurrentUserAdmin", formData.isCurrentUserAdmin());
         model.addAttribute("cities", formData.getCities());
-        if (formData.hasError()) {
-            model.addAttribute("errorMessage", formData.getErrorMessage());
-        }
         return "changeDetails";
     }
-
-
     @PostMapping("/change")
     public String updateUserDetails(@ModelAttribute("changeDetailsDto") ChangeUserDetailsDto dto,
                                     @AuthenticationPrincipal UserDetails currentUserDetails,
@@ -133,39 +123,29 @@ public class userController {
             }
         }
     }
-
     @GetMapping("/admin/users")
     @PreAuthorize("hasRole('ADMIN')")
-    public String adminUsers(Model model) {
-        Iterable<Users> users = usersService.findAllUsers();
-        model.addAttribute("users", users);
+    public String adminUsers(@RequestParam(name = "page",defaultValue = "0") int pageNumber,
+                             @RequestParam(name = "size", defaultValue = "9") int pageSize,
+                             @RequestParam(name = "usernameSearchTerm", required = false) String usernameSearchTerm,
+                             Model model) {
+        Page<Users> usersPage = usersService.findAll(PageRequest.of(pageNumber, pageSize));
+        model.addAttribute("usersPage", usersPage);
+        model.addAttribute("usernameSearchTerm", usernameSearchTerm);
         return "allUsers";
     }
-
     @PostMapping("/admin/users/delete")
     @PreAuthorize("hasRole('ADMIN')")
     public String deleteUser(@RequestParam("id") Long userId,
-                             @AuthenticationPrincipal UserDetails currentUserDetails,
-                             RedirectAttributes redirectAttributes) {
-
+                             @AuthenticationPrincipal UserDetails currentUserDetails) {
         String performedByUsername = currentUserDetails.getUsername();
-
-        UserOperationResult result = usersService.deleteUser(userId, performedByUsername);
-
-        if (result.isSuccess()) {
-            redirectAttributes.addFlashAttribute("successMessage", "Пользователь успешно удалён.");
-        } else {
-            redirectAttributes.addFlashAttribute("errorMessage", "Не удалось удалить пользователя: " + result.getErrorMessage());
-        }
-
+        usersService.deleteUser(userId, performedByUsername);
         return "redirect:/admin/users";
     }
-
     @GetMapping("/admin/users/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public String changeUser(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
         Optional<Users> userOptional = usersService.findById(id);
-
         if (!userOptional.isPresent()) {
             redirectAttributes.addFlashAttribute("errorMessage", "Пользователь с ID " + id + " не найден.");
             return "redirect:/admin/users";
@@ -181,7 +161,6 @@ public class userController {
         model.addAttribute("targetUserId", user.getId());
         model.addAttribute("targetUsername", user.getUsername());
         model.addAttribute("cities", cityRepository.findAll());
-
         return "changeUser";
     }
     @PostMapping("/admin/users/{id}")
@@ -199,5 +178,11 @@ public class userController {
             return "redirect:/admin/users";
         }
     }
-
+    @GetMapping("/admin/users/{id}/edit")
+    public String showEditUserForm(@PathVariable("id") Long userId, Model model) {
+        Optional<Users> userOptional = usersRepository.findById(userId);
+        Users user = userOptional.get();
+        model.addAttribute("user", user);
+        return "changeUser";
+    }
 }
