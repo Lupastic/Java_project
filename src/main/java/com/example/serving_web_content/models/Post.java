@@ -20,10 +20,6 @@ public class Post {
         return viewCount;
     }
 
-    public void setViewCount(int viewCount) {
-        this.viewCount = viewCount;
-    }
-
     public void incrementViewCount() {
         if (this.viewCount == null) {
             this.viewCount = 0;
@@ -72,4 +68,5 @@ public class Post {
     public void setAnons(String anons) {
         this.anons = anons;
     }
+
 }

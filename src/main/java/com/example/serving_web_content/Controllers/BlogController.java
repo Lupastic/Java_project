@@ -1,9 +1,11 @@
 package com.example.serving_web_content.Controllers;
-
+import com.example.serving_web_content.DTO.blog.CreateBlogRequestDto;
+import com.example.serving_web_content.DTO.blog.UpdateBlogRequestDto;
 import com.example.serving_web_content.Repo.UsersRepository;
 import com.example.serving_web_content.Repo.ComRepository;
 import com.example.serving_web_content.models.Comments;
-import com.example.serving_web_content.models.Users;
+import com.example.serving_web_content.service.blog.blogOperationRresult;
+import com.example.serving_web_content.service.blog.blogService;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import org.springframework.ui.Model;
@@ -11,28 +13,26 @@ import com.example.serving_web_content.Repo.PostRepository;
 import com.example.serving_web_content.models.Post;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-
-
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 import java.util.Optional;
 
 @Controller
 public class BlogController {
+    private final blogService BlogService;
     @ManyToOne
     @JoinColumn(name = "userid", nullable = false)
-
     @Autowired
     private PostRepository postRepository;
     @Autowired
     private ComRepository comRepository;
     @Autowired
-    private UsersRepository usersRepository;
+    public BlogController(blogService blogService) {
+        BlogService = blogService;
+    }
 
     @GetMapping("/blog")
     public String blogAdd(Model model) {
@@ -47,14 +47,20 @@ public class BlogController {
         return "blog-Add";
     }
     @PostMapping("/blog/add")
-    public String blogPostAdd(@RequestParam String title,@RequestParam String anons,
-                              @AuthenticationPrincipal UserDetails userDetails,
-                              @RequestParam String text) {
-        Post post = new Post(title,anons,text);
-        Users user = usersRepository.findByUsername(userDetails.getUsername());
-        post.setUser(user);
-        postRepository.save(post);
-        return "redirect:/blog";
+    public String blogPostAdd(@ModelAttribute CreateBlogRequestDto dto,
+                              @AuthenticationPrincipal UserDetails userDetails) {
+        blogOperationRresult result = BlogService.createPost(
+                dto.getTitle(),
+                dto.getAnons(),
+                dto.getText(),
+                userDetails.getUsername()
+        );
+        if (result.isSucces()){
+            return "redirect:/blog";
+        }
+        else{
+            return "redirect:/blog";
+        }
     }
     @GetMapping("/blog/{id}")
     public String blogViewCount(@PathVariable("id") long postId, Model model) {
@@ -77,23 +83,42 @@ public class BlogController {
         return "blog-edit.html";
     }
     @PostMapping("/blog/{id}/edit")
-    public String blogPostUpdate(@PathVariable ("id") long id,@RequestParam String title,
-                                 @RequestParam String anons,@RequestParam String text) {
-        Post post = postRepository.findById(id).orElseThrow();
-        post.setTitle(title);
-        post.setAnons(anons);
-        post.setText(text);
-        postRepository.save(post);
-        return "redirect:/blog";
+    public String blogPostUpdate(@PathVariable("id") Long postIDFromPath,
+                                 @ModelAttribute UpdateBlogRequestDto dto,
+                                 @AuthenticationPrincipal UserDetails userDetails,
+                                 RedirectAttributes redirectAttributes) {
+
+        if (postIDFromPath == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Не указан ID поста для редактирования.");
+            return "redirect:/blog";
+        }
+        blogOperationRresult result = BlogService.updatePost(
+                postIDFromPath,
+                dto.getTitle(),
+                dto.getAnons(),
+                dto.getText(),
+                userDetails.getUsername());
+        if (result.isSuccess()) {
+            redirectAttributes.addFlashAttribute("successMessage", "Пост успешно обновлен!");
+            return "redirect:/blog/" + postIDFromPath;
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Не удалось обновить пост: " + result.getErrorMessage());
+            return "redirect:/blog";
+        }
     }
     @PostMapping("/blog/{id}/remove")
-    public String blogPostDelete(@PathVariable ("id") long id) {
-        Post post = postRepository.findById(id).orElseThrow();
-        List<Comments> commentsToDelete = comRepository.findByPost(post);
-        if (commentsToDelete != null && !commentsToDelete.isEmpty()) {
-            comRepository.deleteAll(commentsToDelete);
+    public String blogPostDelete(@PathVariable("id") Long postIDFromPath,
+                                 @AuthenticationPrincipal UserDetails userDetails,
+                                 RedirectAttributes redirectAttributes) {
+        blogOperationRresult result = BlogService.deletePost(
+                postIDFromPath,
+                userDetails.getUsername());
+        if (result.isSuccess()) {
+            redirectAttributes.addFlashAttribute("successMessage", "Комментарий успешно удален!");
+            return "redirect:/blog";
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Не удалось удалить комментарий: " + result.getErrorMessage());
+            return "redirect:/blog";
         }
-        postRepository.delete(post);
-        return "redirect:/blog";
     }
 }
